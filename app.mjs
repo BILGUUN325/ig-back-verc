@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 
 import PostRouter from "./routers/post.router.mjs";
 import AuthRouter from "./routers/auth.router.mjs";
+import UserRouter from "./routers/user.router.mjs";
 
 dotenv.config();
 
@@ -22,10 +23,27 @@ app.get("/", (req, res) => {
 });
 
 app.use("/posts", PostRouter);
+app.use("/users", UserRouter);
 
 app.use(AuthRouter);
 
-app.listen(PORT, () => {
-  mongoose.connect(process.env.MONGO_URL);
-  console.log(`Your app is running on http://localhost:${PORT}`);
+
+// MongoDB connection with error handling
+mongoose
+  .connect(process.env.MONGO_URL)
+  .then(() => {
+    console.log("Connected to MongoDB successfully");
+  })
+  .catch((error) => {
+    console.error("MongoDB connection error:", error);
+    process.exit(1);
+  });
+
+// Handle MongoDB connection events
+mongoose.connection.on("disconnected", () => {
+  console.warn("MongoDB disconnected");
+});
+
+mongoose.connection.on("error", (error) => {
+  console.error("MongoDB error:", error);
 });
